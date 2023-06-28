@@ -1,0 +1,6 @@
+﻿Created at 28.06.2023 12:40:33 by (©) FolderHTML
+|
+|   FolderHTML.exe                       14.5 KB (28.06.2023 12:40:26) [27.06.2023 16:42:56] {Archive}
+|   test.cmd                                85 B (28.06.2023 12:36:54) [28.06.2023 12:30:28] {Archive}
+|
+(©) FolderHTML by dkxce 2023
