@@ -1,7 +1,7 @@
 ﻿//
 // C# 
 // FolderHTML
-// v 0.2, 28.06.2023
+// v 0.3, 02.07.2023
 // https://github.com/dkxce/FolderHTML
 // en,ru,1251,utf-8
 //
@@ -77,9 +77,10 @@ namespace FolderHTML
             // SET PREVIOUS PATH
             string prevPath = Path.GetDirectoryName(same);
             string prefSpace = "";
+            
 
             // WRITE FILES + DIRS INFOS
-            foreach(string f in files)
+            foreach (string f in files)
             {
                 string filePath = Path.GetDirectoryName(f);
                 string fileName = Path.GetFileName(f);
@@ -136,10 +137,12 @@ namespace FolderHTML
                 string fileLine = $"{prefSpace}{DEFAULT_DELIM_SYMB}   ";
                 fileLine += $"<a href=\"{fileRelPath}\">{fileName}</a>";
                 if (Parameters.addSize || Parameters.addMdfd || Parameters.addCrtd || Parameters.addFlat) fileLine += $"{fileSpaces}";
+                fileLine += "<span id=\"fileInfo\">";
                 if (Parameters.addSize) fileLine += $" <b>{BytesToString(fileInfo.Length),DEFAULT_SIZE_SPACE}</b>";
                 if (Parameters.addMdfd) fileLine += $" ({fileInfo.LastWriteTime})";
                 if (Parameters.addCrtd) fileLine += $" [{fileInfo.CreationTime}]";
                 if (Parameters.addFlat) fileLine += $" {{{fileInfo.Attributes}}}";
+                fileLine += "</span>";
                 WriteOut(fileLine, Parameters.htmlFile, Parameters.textFile);
             };
 
@@ -165,6 +168,8 @@ namespace FolderHTML
             Console.WriteLine("  -m      - Add File Modified");
             Console.WriteLine("  -c      - Add File Created");
             Console.WriteLine("  -a      - Add File Attributes");
+            Console.WriteLine("  -g      - Tabled HTML (Grid)");
+            Console.WriteLine("  -G      - Tabled HTML (Grid) with border");
             Console.WriteLine("  -w      - Wait on done");
             Console.WriteLine("  -h      - Write Out HTML file filelist.html");
             Console.WriteLine("  -H      - Write Out HTML file filelist.html and open it");
@@ -179,7 +184,8 @@ namespace FolderHTML
             Console.WriteLine("");
             Console.WriteLine("Example:");
             Console.WriteLine("          > folderhtml");
-            Console.WriteLine("          > folderhtml -s -m -c -a -d=50");
+            Console.WriteLine("          > folderhtml -smcawGH");
+            Console.WriteLine("          > folderhtml -s -m -c -a -d=50");            
             Console.WriteLine("          > folderhtml -h %CD% \"DEMO LINE\"");
             Console.WriteLine("          > folderhtml -t -H %CD% \"LINE 1\" \"LINE 2\"");
             Console.WriteLine(DEFAULT_APP_HEADER);
@@ -213,20 +219,25 @@ namespace FolderHTML
             {
                 if (flags)
                 {
-                    if (a == "-s") Parameters.addSize = true;
-                    if (a == "-m") Parameters.addMdfd = true;
-                    if (a == "-c") Parameters.addCrtd = true;
-                    if (a == "-a") Parameters.addFlat = true;
-                    if (a == "-w") Parameters.wait = true;
-                    if (a == "-h" || a == "-H") Parameters.htmlFile = "filelist.html";
-                    if (a == "-t" || a == "-T") Parameters.textFile = "filelist.txt";
-                    if (a.StartsWith("-H")) Parameters.openHTML = true;
-                    if (a.StartsWith("-T")) Parameters.openTEXT = true;
+                    if(a.StartsWith("-"))
+                    {
+                        if (a.Contains("s")) Parameters.addSize = true;
+                        if (a.Contains("g")) Parameters.tabled = true;
+                        if (a.Contains("G")) { Parameters.tabled = true; Parameters.border = true; }
+                        if (a.Contains("m")) Parameters.addMdfd = true;
+                        if (a.Contains("c")) Parameters.addCrtd = true;
+                        if (a.Contains("a")) Parameters.addFlat = true;
+                        if (a.Contains("w")) Parameters.wait = true;
+                        if (a.Contains("h") || a.Contains("H")) Parameters.htmlFile = "filelist.html";
+                        if (a.Contains("t") || a.Contains("T")) Parameters.textFile = "filelist.txt";
+                        if (a.Contains("H")) Parameters.openHTML = true;
+                        if (a.Contains("T")) Parameters.openTEXT = true;
+                    };
                     if ((a.StartsWith("-h=") || a.StartsWith("-H=")) && a.Length > 3) Parameters.htmlFile = a.Substring(3);
                     if ((a.StartsWith("-t=") || a.StartsWith("-T=")) && a.Length > 3) Parameters.textFile = a.Substring(3);
                     if ((a.StartsWith("-d=") && a.Length > 3 && a.Length < 6 && byte.TryParse(a.Substring(3), out byte val))) Parameters.file_space = val;
                     if ((a.StartsWith("-e=") && a.Length > 3)) Parameters.ExcludeFiles.Add(a.Substring(3));
-                    if (!a.StartsWith("-")) { Parameters.path = a.Trim('\\','"'); flags = false; };
+                    if (!a.StartsWith("-")) { Parameters.path = a.Trim('\\','"').Replace("\\\\","\\"); flags = false; };
                     continue;
                 };
                 Parameters.customLines.Add(a);
@@ -272,10 +283,32 @@ namespace FolderHTML
             // HTML
             if (!string.IsNullOrEmpty(htmlFile))
             {
-                FileStream fs = new FileStream(htmlFile, FileMode.Append, FileAccess.Write);
+                FileStream fs = new FileStream(htmlFile, FileMode.OpenOrCreate, FileAccess.Write);
+                fs.Position = fs.Length;
                 StreamWriter sw = new StreamWriter(fs, Encoding.UTF8);
+                if (Parameters.tabled)
+                {
+                    if (fs.Position == 0)
+                    {
+                        if (Parameters.border)
+                            sw.WriteLine("<table cellpadding=\"0\" cellspacing=\"0\">\r\n<style> td{ border-bottom: dashed 1px #E0E0E0;} </style>");
+                        else
+                            sw.WriteLine("<table cellpadding=\"0\" cellspacing=\"0\">");
+                    }
+                    else fs.Position = fs.Position - 10 /* </table> + crlf */;
+                };
                 while (line.IndexOf("  ") >= 0) line = line.Replace("  ", "&nbsp; ");
-                sw.WriteLine($"<TT>{line}</TT>" + "<br/>");
+                int iofi = line.IndexOf("<span id=\"fileInfo\">");
+                if (Parameters.tabled)
+                {
+                    if (iofi > 0)
+                        sw.WriteLine($"<tr><td><TT>{line.Substring(0, iofi)}</TT></td><td><TT>{line.Substring(iofi)}</TT></td></tr>");
+                    else
+                        sw.WriteLine($"<tr><td colspan=\"2\"><TT>{line}</TT></td></tr>");
+                }
+                else
+                    sw.WriteLine($"<TT>{line}</TT><br/>");
+                if (Parameters.tabled) sw.WriteLine("</table>");
                 sw.Close();
                 fs.Close();
             };
@@ -310,6 +343,8 @@ namespace FolderHTML
             public static bool openHTML   = false;
             public static bool openTEXT   = false;
             public static bool addSize    = false;
+            public static bool tabled     = false;
+            public static bool border     = false;
             public static bool addMdfd    = false;
             public static bool addCrtd    = false;
             public static bool addFlat    = false;
