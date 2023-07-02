@@ -219,7 +219,7 @@ namespace FolderHTML
             {
                 if (flags)
                 {
-                    if(a.StartsWith("-"))
+                    if (a.StartsWith("-") && !a.Contains("="))
                     {
                         if (a.Contains("s")) Parameters.addSize = true;
                         if (a.Contains("g")) Parameters.tabled = true;
@@ -233,8 +233,16 @@ namespace FolderHTML
                         if (a.Contains("H")) Parameters.openHTML = true;
                         if (a.Contains("T")) Parameters.openTEXT = true;
                     };
-                    if ((a.StartsWith("-h=") || a.StartsWith("-H=")) && a.Length > 3) Parameters.htmlFile = a.Substring(3);
-                    if ((a.StartsWith("-t=") || a.StartsWith("-T=")) && a.Length > 3) Parameters.textFile = a.Substring(3);
+                    if ((a.StartsWith("-h=") || a.StartsWith("-H=")) && a.Length > 3)
+                    {
+                        Parameters.htmlFile = a.Substring(3);
+                        if (a.StartsWith("-H=")) Parameters.openHTML = true;
+                    };
+                    if ((a.StartsWith("-t=") || a.StartsWith("-T=")) && a.Length > 3)
+                    {
+                        Parameters.textFile = a.Substring(3);
+                        if (a.StartsWith("-T=")) Parameters.openTEXT = true;
+                    };
                     if ((a.StartsWith("-d=") && a.Length > 3 && a.Length < 6 && byte.TryParse(a.Substring(3), out byte val))) Parameters.file_space = val;
                     if ((a.StartsWith("-e=") && a.Length > 3)) Parameters.ExcludeFiles.Add(a.Substring(3));
                     if (!a.StartsWith("-")) { Parameters.path = a.Trim('\\','"').Replace("\\\\","\\"); flags = false; };
