@@ -50,6 +50,8 @@ Flags:
   -m      - Add File Modified
   -c      - Add File Created
   -a      - Add File Attributes
+  -g      - Tabled HTML (Grid)
+  -G      - Tabled HTML (Grid) with border
   -w      - Wait on done
   -h      - Write Out HTML file filelist.html
   -H      - Write Out HTML file filelist.html and open it
@@ -63,7 +65,8 @@ Flags:
   -e=...  - Exclude file(s) with name(s)
 
 Example:
-          > folderhtml
+          > folderhtml    
+          > folderhtml -smcawGH    
           > folderhtml -s -m -c -a -d=50
           > folderhtml -h %CD% "DEMO LINE"
           > folderhtml -t -H %CD% "LINE 1" "LINE 2"
