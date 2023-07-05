@@ -142,6 +142,7 @@ namespace FolderHTML
                 if (Parameters.addMdfd) fileLine += $" ({fileInfo.LastWriteTime})";
                 if (Parameters.addCrtd) fileLine += $" [{fileInfo.CreationTime}]";
                 if (Parameters.addFlat) fileLine += $" {{{fileInfo.Attributes}}}";
+                if (Parameters.addAge)  fileLine += $" -{DateTime.UtcNow - fileInfo.LastWriteTimeUtc}";
                 fileLine += "</span>";
                 WriteOut(fileLine, Parameters.htmlFile, Parameters.textFile);
             };
@@ -168,6 +169,7 @@ namespace FolderHTML
             Console.WriteLine("  -m      - Add File Modified");
             Console.WriteLine("  -c      - Add File Created");
             Console.WriteLine("  -a      - Add File Attributes");
+            Console.WriteLine("  -o      - File Age (Since Now)");
             Console.WriteLine("  -g      - Tabled HTML (Grid)");
             Console.WriteLine("  -G      - Tabled HTML (Grid) with border");
             Console.WriteLine("  -w      - Wait on done");
@@ -222,6 +224,7 @@ namespace FolderHTML
                     if (a.StartsWith("-") && !a.Contains("="))
                     {
                         if (a.Contains("s")) Parameters.addSize = true;
+                        if (a.Contains("o")) Parameters.addAge = true;
                         if (a.Contains("g")) Parameters.tabled = true;
                         if (a.Contains("G")) { Parameters.tabled = true; Parameters.border = true; }
                         if (a.Contains("m")) Parameters.addMdfd = true;
@@ -351,6 +354,7 @@ namespace FolderHTML
             public static bool openHTML   = false;
             public static bool openTEXT   = false;
             public static bool addSize    = false;
+            public static bool addAge     = false;
             public static bool tabled     = false;
             public static bool border     = false;
             public static bool addMdfd    = false;
