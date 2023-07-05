@@ -50,6 +50,7 @@ Flags:
   -m      - Add File Modified
   -c      - Add File Created
   -a      - Add File Attributes
+  -o      - File Age (Since Now)
   -g      - Tabled HTML (Grid)
   -G      - Tabled HTML (Grid) with border
   -w      - Wait on done
