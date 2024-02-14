@@ -6,9 +6,13 @@
 // en,ru,1251,utf-8
 //
 
+using Force.Crc32;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Channels;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -78,6 +82,28 @@ namespace FolderHTML
             string prevPath = Path.GetDirectoryName(same);
             string prefSpace = "";
             
+            if (Parameters.AddHeader)
+            {
+                string fileName = "FileName";
+                string fileSpaces = ""; while (fileName.Length + fileSpaces.Length < Parameters.file_space) fileSpaces += " ";
+                
+                // FORMAT AND WRITE FILE
+                string fileLine = $"{prefSpace}{DEFAULT_DELIM_SYMB}   ";
+                fileLine += "<b>" + fileName + "</b>";
+                if (Parameters.addSize || Parameters.addMdfd || Parameters.addCrtd || Parameters.addFlat) fileLine += $"{fileSpaces}";
+                fileLine += "<span id=\"fileInfo\">";
+                if (Parameters.addSize) fileLine += $" <b>{"FileSize",DEFAULT_SIZE_SPACE}</b>";
+                if (Parameters.addMdfd) fileLine += " (LastWriteTime      )";
+                if (Parameters.addCrtd) fileLine += " [CreationTime       ]";
+                if (Parameters.addFlat) fileLine += " {Attributes}";
+                if (Parameters.addAge) fileLine += " -LastWriteTimeUtc";
+                if (Parameters.calcCRC32) fileLine += $" | CRC32SUM";
+                if (Parameters.calcMD5) fileLine += $" | MD5HASH";
+                fileLine += "</span>";
+                WriteOut(fileLine, Parameters.htmlFile, Parameters.textFile);
+                WriteOut($"{prefSpace}{DEFAULT_DELIM_SYMB}   ", Parameters.htmlFile, Parameters.textFile);
+            };
+
 
             // WRITE FILES + DIRS INFOS
             foreach (string f in files)
@@ -143,6 +169,8 @@ namespace FolderHTML
                 if (Parameters.addCrtd) fileLine += $" [{fileInfo.CreationTime}]";
                 if (Parameters.addFlat) fileLine += $" {{{fileInfo.Attributes}}}";
                 if (Parameters.addAge)  fileLine += $" -{DateTime.UtcNow - fileInfo.LastWriteTimeUtc}";
+                if (Parameters.calcCRC32) fileLine += $" | {GetFileCRC32(fileInfo)}";
+                if (Parameters.calcMD5) fileLine += $" | {GetFileMD5Hash(fileInfo)}";
                 fileLine += "</span>";
                 WriteOut(fileLine, Parameters.htmlFile, Parameters.textFile);
             };
@@ -157,6 +185,41 @@ namespace FolderHTML
             if (Parameters.wait) System.Threading.Thread.Sleep(DEFAULT_SLEEP_VALU);
         }
 
+        public static string GetFileMD5Hash(FileInfo fi) => GetFileMD5Hash(fi.FullName);
+
+        public static string GetFileMD5Hash(string fileName)
+        {
+            try {
+                using (var md5 = MD5.Create())
+                    using (var stream = File.OpenRead(fileName))
+                        return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToUpperInvariant();
+            } catch { };
+            return "";
+        }
+
+        public static string GetFileCRC32(FileInfo fi) => GetFileCRC32(fi.FullName);
+
+        public static string GetFileCRC32(string fileName)
+        {
+            int readed = 0;
+            uint initial = 0;
+            FileStream fs = null;
+            try
+            {
+                byte[] buffer = new byte[524288]; // 512 KB
+                fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+                while(true)
+                {
+                    readed = fs.Read(buffer, 0, buffer.Length);
+                    if(readed == 0) break;
+                    initial = Crc32Algorithm.Append(initial, buffer, 0, readed);
+                };
+                return initial.ToString("X8");
+            }
+            catch { return ""; }
+            finally { if (fs != null) fs.Close(); };
+        }
+
         private static void WriteHelp()
         {
             Console.WriteLine($"{DEFAULT_APP_HEADER} ( https://github.com/dkxce/FolderHTML )");
@@ -165,6 +228,7 @@ namespace FolderHTML
             Console.WriteLine("");
             Console.WriteLine("Flags:");
             Console.WriteLine("  -?      - Help");
+            Console.WriteLine("  -0      - Add Header");
             Console.WriteLine("  -s      - Add File Sizes");
             Console.WriteLine("  -m      - Add File Modified");
             Console.WriteLine("  -c      - Add File Created");
@@ -173,6 +237,8 @@ namespace FolderHTML
             Console.WriteLine("  -g      - Tabled HTML (Grid)");
             Console.WriteLine("  -G      - Tabled HTML (Grid) with border");
             Console.WriteLine("  -w      - Wait on done");
+            Console.WriteLine("  -x      - Add CRC32 File Hash");
+            Console.WriteLine("  -X      - Add MD5 File Hash");
             Console.WriteLine("  -h      - Write Out HTML file filelist.html");
             Console.WriteLine("  -H      - Write Out HTML file filelist.html and open it");
             Console.WriteLine("  -t      - Write Out TEXT file filelist.html");
@@ -223,6 +289,7 @@ namespace FolderHTML
                 {
                     if (a.StartsWith("-") && !a.Contains("="))
                     {
+                        if (a.Contains("0")) Parameters.AddHeader = true;
                         if (a.Contains("s")) Parameters.addSize = true;
                         if (a.Contains("o")) Parameters.addAge = true;
                         if (a.Contains("g")) Parameters.tabled = true;
@@ -231,6 +298,8 @@ namespace FolderHTML
                         if (a.Contains("c")) Parameters.addCrtd = true;
                         if (a.Contains("a")) Parameters.addFlat = true;
                         if (a.Contains("w")) Parameters.wait = true;
+                        if (a.Contains("x")) Parameters.calcCRC32 = true;
+                        if (a.Contains("X")) Parameters.calcMD5 = true;
                         if (a.Contains("h") || a.Contains("H")) Parameters.htmlFile = "filelist.html";
                         if (a.Contains("t") || a.Contains("T")) Parameters.textFile = "filelist.txt";
                         if (a.Contains("H")) Parameters.openHTML = true;
@@ -361,6 +430,9 @@ namespace FolderHTML
             public static bool addCrtd    = false;
             public static bool addFlat    = false;
             public static bool wait       = false;
+            public static bool calcMD5    = false;
+            public static bool calcCRC32  = false;
+            public static bool AddHeader  = false;
             public static List<string> customLines = new List<string>();
             public static List<string> ExcludeFiles = new List<string>();
         }

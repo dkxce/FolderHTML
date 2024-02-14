@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dkxce")]
 [assembly: AssemblyProduct("FolderHTML")]
-[assembly: AssemblyCopyright("Copyright © dkxce 2023")]
+[assembly: AssemblyCopyright("Copyright © dkxce 2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

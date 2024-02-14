@@ -2,7 +2,6 @@ C:\DISK2\PROJECTS\Development\OAE_CSharp\FolderHTML\FolderHTML\bin\Debug\FolderH
 C:\DISK2\PROJECTS\Development\OAE_CSharp\FolderHTML\FolderHTML\bin\Debug\FolderHTML.exe
 C:\DISK2\PROJECTS\Development\OAE_CSharp\FolderHTML\FolderHTML\bin\Debug\FolderHTML.pdb
 C:\DISK2\PROJECTS\Development\OAE_CSharp\FolderHTML\FolderHTML\obj\Debug\FolderHTML.csproj.AssemblyReference.cache
-C:\DISK2\PROJECTS\Development\OAE_CSharp\FolderHTML\FolderHTML\obj\Debug\FolderHTML.csproj.SuggestedBindingRedirects.cache
 C:\DISK2\PROJECTS\Development\OAE_CSharp\FolderHTML\FolderHTML\obj\Debug\FolderHTML.csproj.CoreCompileInputs.cache
 C:\DISK2\PROJECTS\Development\OAE_CSharp\FolderHTML\FolderHTML\obj\Debug\FolderHTML.exe
 C:\DISK2\PROJECTS\Development\OAE_CSharp\FolderHTML\FolderHTML\obj\Debug\FolderHTML.pdb

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>-mswhcaG -d=0 -o -e=filelist.log "C:\\Downloads\\" "Debug" "v2"</StartArguments>
+    <StartArguments>-mswhcaGx -d=0 -o -e=filelist.log "C:\\Downloads\\" "Debug" "v2"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartArguments>"C:\DISK2\PROJECTS\Development\OAE_CSharp\MSolDrvUpd\MSolDesk\bin\Install\VPS\server_root\var\www\html\ipack\rc" "%40/ipack/rc"</StartArguments>
